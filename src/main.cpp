@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "map.hpp" //подключили код с картой
+#include "map.hpp" //подключили код с карто
 
 int main()
 {
@@ -10,14 +10,14 @@ int main()
     sf::RenderWindow window(sf::VideoMode(900, 600), "SFML works!", sf::Style::None);
 
 //#### set max fps in window #####
-    window.setFramerateLimit(120);
+    window.setFramerateLimit(60);
 
 //##### turn off visibile cursor #######
     window.setMouseCursorVisible(false);
 
 //########### CREATE CIRCL #########
     sf::CircleShape shape(10.f);
-    shape.setFillColor(sf::Color::Blue);
+    shape.setFillColor(sf::Color::White);
     shape.setOrigin(10, 10);
 //##################################
 
@@ -64,13 +64,22 @@ sf::Mouse::setPosition(sf::Vector2i(450, 300), window);
 textPos.setString("x = [450] y = [300]");
 //########################################
 
-
+//#############  FPS  ##################
     sf::Clock clock;
     int c = 0;
     int prev = 0;
+//#######################################
 
+//##########################
     std::ostringstream ssPos;
     std::ostringstream ssFPS;
+//##########################
+
+//###############################
+    int Level = 1;
+//###############################
+
+
     while (window.isOpen())
     {
         sf::Event event;
@@ -96,30 +105,76 @@ textPos.setString("x = [450] y = [300]");
         window.clear();
 
 
-        //#########################  Рисуем карту  ############################
-		for (int i = 0; i < HEIGHT_MAP; i++)
-		{
-            for (int j = 0; j < WIDTH_MAP; j++)
+//##########################  Рисуем карту  ############################
+        if(Level = 1)
+        {
+            for (int i = 0; i < HEIGHT_MAP; i++)
+		    {
+                for (int j = 0; j < WIDTH_MAP; j++)
+                {
+                    if (FirstLevelMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(32, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
+			        if (FirstLevelMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
+			        if (FirstLevelMap[i][j] == '0') s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
+			        if (FirstLevelMap[i][j] == '@') s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
+
+                    s_map.setPosition(j * 32, i * 32);
+			        window.draw(s_map);
+                }
+		    }
+            if(FirstLevelMap[position.y][position.x] == 's')
             {
-                if (TileMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(0, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
-			    if (TileMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
-			    if ((TileMap[i][j] == '0')) s_map.setTextureRect(sf::IntRect(32, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
-
-
-			    s_map.setPosition(j * 32, i * 32);//по сути раскидывает квадратики, превращая в карту. то есть задает каждому из них позицию. если убрать, то вся карта нарисуется в одном квадрате 32*32 и мы увидим один квадрат
-
-			    window.draw(s_map);//рисуем квадратики на экран
+                Level = 2;
             }
-		}
+        }
 
+        if(Level = 2)
+        {
+            for (int i = 0; i < HEIGHT_MAP; i++)
+		    {
+                for (int j = 0; j < WIDTH_MAP; j++)
+                {
+                    if (SecondLevelMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(32, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
+			        if (SecondLevelMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
+			        if (SecondLevelMap[i][j] == '0') s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
+			        if (SecondLevelMap[i][j] == '@') s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
 
+                    s_map.setPosition(j * 32, i * 32);
+			        window.draw(s_map);
+                }
+		    }
+            if(SecondLevelMap[position.y][position.x] == 's')
+            {
+                Level = 3;
+            }
+        }
+
+        if(Level = 3)
+        {
+            for (int i = 0; i < HEIGHT_MAP; i++)
+		    {
+                for (int j = 0; j < WIDTH_MAP; j++)
+                {
+                    if (ThirdLevelMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(32, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
+			        if (ThirdLevelMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
+			        if (ThirdLevelMap[i][j] == '0') s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
+			        if (ThirdLevelMap[i][j] == '@') s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
+
+                    s_map.setPosition(j * 32, i * 32);
+			        window.draw(s_map);
+                }
+		    }
+        }
+//###################################################################
+
+//#############################
         window.draw(shape);
         window.draw(textPos);
         window.draw(textFPS);
         window.display();
+//##############################
 
+//##################--FPS--##########################
         int time = clock.getElapsedTime().asSeconds();
-
         if(time != prev)
         {
             ssFPS.str("");
@@ -130,6 +185,7 @@ textPos.setString("x = [450] y = [300]");
         }
 
         c++;
+//#####################################################
     }
 
     return 0;
