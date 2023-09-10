@@ -2,83 +2,77 @@
 #include <iostream>
 #include <sstream>
 
-#include "map.hpp" //подключили код с карто
+#include "map.hpp" // Подключили код с картой
 
 int main()
 {
-
     sf::RenderWindow window(sf::VideoMode(900, 600), "SFML works!", sf::Style::None);
-
-//#### set max fps in window #####
     window.setFramerateLimit(60);
-
-//##### turn off visibile cursor #######
     window.setMouseCursorVisible(false);
 
-//########### CREATE CIRCL #########
-    sf::CircleShape shape(10.f);
+    sf::RectangleShape shape;
+    shape.setSize(sf::Vector2f(15.0f, 15.0f));
     shape.setFillColor(sf::Color::White);
-    shape.setOrigin(10, 10);
-//##################################
 
-    sf::Vector2i position = sf::Mouse::getPosition(window);
+    sf::Vector2f position(450, 300); // Измените начальную позицию игрока
+    shape.setPosition(position);
 
-//################### Load Font form file ####################
+    sf::Vector2i mousePosition; // Позиция мыши
+
     sf::Font arial_font;
     if (!arial_font.loadFromFile("resources/BlackArial.ttf"))
     {
         std::cout << "ERROR LOAD FONT" << std::endl;
     }
-//############################################################
 
-//############ Position TEXT################
     sf::Text textPos;
     textPos.setFont(arial_font);
     textPos.setPosition(10, 570);
-    textPos.setScale(0.5,0.5);
-//###########################################
+    textPos.setScale(0.5, 0.5);
 
-//################# FPS TEXT ################
+    sf::Text textCol;
+    textCol.setFont(arial_font);
+    textCol.setPosition(10, 530);
+    textCol.setScale(0.5, 0.5);
+
+    sf::Text textGV;
+    textGV.setFont(arial_font);
+    textGV.setPosition(100, 230);
+    textGV.setScale(3.5, 3.5);
+    textGV.setString("GAME OVER");
+
     sf::Text textFPS;
     textFPS.setFont(arial_font);
     textFPS.setPosition(10, 550);
-    textFPS.setScale(0.5,0.5);
+    textFPS.setScale(0.5, 0.5);
     textFPS.setString("FPS: 0");
-//###########################################
 
-//################# Map ################
-sf::Image map_image;//объект изображения для карты
-map_image.loadFromFile("resources/MapIm.png");//загружаем файл для карты
-//
-sf::Texture map;//текстура карты
-map.loadFromImage(map_image);//заряжаем текстуру картинкой
-//
-sf::Sprite s_map;//создаём спрайт для карты
-s_map.setTexture(map);//заливаем текстуру спрайтом
-//###########################################
+    sf::Image map_image;
+    map_image.loadFromFile("resources/MapIm.png");
 
+    sf::Texture map;
+    map.loadFromImage(map_image);
 
+    sf::Sprite s_map;
+    s_map.setTexture(map);
 
-//##### SET DEFAULT OPTION #################
-sf::Mouse::setPosition(sf::Vector2i(450, 300), window);
-textPos.setString("x = [450] y = [300]");
-//########################################
+    sf::FloatRect playerBounds; // Границы игрока
+    sf::FloatRect tileBounds;   // Границы тайла
 
-//#############  FPS  ##################
     sf::Clock clock;
     int c = 0;
     int prev = 0;
-//#######################################
 
-//##########################
     std::ostringstream ssPos;
     std::ostringstream ssFPS;
-//##########################
 
-//###############################
-    int Level = 1;
-//###############################
+    //##### SET DEFAULT OPTION #################
+    sf::Mouse::setPosition(sf::Vector2i(830, 540), window);
+    textPos.setString("x = [450] y = [300]");
+    //########################################
 
+    sf::Clock gameOverClock; // Таймер для отображения "Game Over"
+    bool showGameOver = false;
 
     while (window.isOpen())
     {
@@ -88,104 +82,91 @@ textPos.setString("x = [450] y = [300]");
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close();
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+                window.close();
 
             if (event.type == sf::Event::MouseMoved)
             {
-                // обработка движения мыши
-                ssPos.str(""); // очистить содержимое ss
-                ssPos << "x = [" << position.x << "] y = [" << position.y<<"]";
+                mousePosition = sf::Mouse::getPosition(window);
+                ssPos.str("");
+                ssPos << "x = [" << mousePosition.x << "] y = [" << mousePosition.y << "]";
                 textPos.setString(ssPos.str());
             }
         }
 
-        position = sf::Mouse::getPosition(window);
-        shape.setPosition(position.x, position.y);
+        if (gameOverClock.getElapsedTime().asSeconds() >= 2.0f)
+        {
+            showGameOver = false;
+        }
+
+
+        sf::Vector2f prevPosition = shape.getPosition();
+        shape.setPosition(mousePosition.x, mousePosition.y);;
 
         window.clear();
 
-
-//##########################  Рисуем карту  ############################
-        if(Level = 1)
+        for (int i = 0; i < HEIGHT_MAP; i++)
         {
-            for (int i = 0; i < HEIGHT_MAP; i++)
-		    {
-                for (int j = 0; j < WIDTH_MAP; j++)
-                {
-                    if (FirstLevelMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(32, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
-			        if (FirstLevelMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
-			        if (FirstLevelMap[i][j] == '0') s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
-			        if (FirstLevelMap[i][j] == '@') s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
-
-                    s_map.setPosition(j * 32, i * 32);
-			        window.draw(s_map);
-                }
-		    }
-            if(FirstLevelMap[position.y][position.x] == 's')
+            for (int j = 0; j < WIDTH_MAP; j++)
             {
-                Level = 2;
+                if (LevelMap[i][j] == ' ')
+                {
+                    s_map.setTextureRect(sf::IntRect(32, 0, 32, 32));
+                }
+                else if (LevelMap[i][j] == 's')
+                {
+                    s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));
+                }
+                else if (LevelMap[i][j] == '0')
+                {
+                    s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));
+                }
+                else if (LevelMap[i][j] == '@')
+                {
+                    s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
+                }
+
+                s_map.setPosition(j * 32, i * 32);
+                window.draw(s_map);
+
+                tileBounds = s_map.getGlobalBounds();
+                playerBounds = shape.getGlobalBounds();
+
+                if (LevelMap[i][j] == '0' && playerBounds.intersects(tileBounds))
+                {
+                    // Если есть коллизия с черным квадратом, перемещаемся на начальную позицию
+                    shape.setPosition(sf::Vector2f(800, 520)); // Установите начальную позицию здесь
+                    sf::Mouse::setPosition(sf::Vector2i(800, 520), window);
+                    textCol.setString("Collision!!");
+
+                    showGameOver = true;
+                    gameOverClock.restart();
+                }
             }
         }
-
-        if(Level = 2)
-        {
-            for (int i = 0; i < HEIGHT_MAP; i++)
-		    {
-                for (int j = 0; j < WIDTH_MAP; j++)
-                {
-                    if (SecondLevelMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(32, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
-			        if (SecondLevelMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
-			        if (SecondLevelMap[i][j] == '0') s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
-			        if (SecondLevelMap[i][j] == '@') s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
-
-                    s_map.setPosition(j * 32, i * 32);
-			        window.draw(s_map);
-                }
-		    }
-            if(SecondLevelMap[position.y][position.x] == 's')
-            {
-                Level = 3;
-            }
-        }
-
-        if(Level = 3)
-        {
-            for (int i = 0; i < HEIGHT_MAP; i++)
-		    {
-                for (int j = 0; j < WIDTH_MAP; j++)
-                {
-                    if (ThirdLevelMap[i][j] == ' ')  s_map.setTextureRect(sf::IntRect(32, 0, 32, 32)); //если встретили символ пробел, то рисуем 1й квадратик
-			        if (ThirdLevelMap[i][j] == 's')  s_map.setTextureRect(sf::IntRect(64, 0, 32, 32));//если встретили символ s, то рисуем 2й квадратик
-			        if (ThirdLevelMap[i][j] == '0') s_map.setTextureRect(sf::IntRect(0, 0, 32, 32));//если встретили символ 0, то рисуем 3й квадратик
-			        if (ThirdLevelMap[i][j] == '@') s_map.setTextureRect(sf::IntRect(96, 0, 32, 32));
-
-                    s_map.setPosition(j * 32, i * 32);
-			        window.draw(s_map);
-                }
-		    }
-        }
-//###################################################################
-
-//#############################
         window.draw(shape);
         window.draw(textPos);
         window.draw(textFPS);
-        window.display();
-//##############################
+        window.draw(textCol);
 
-//##################--FPS--##########################
+        if (showGameOver)
+        {
+            window.draw(textGV); // Отображаем "Game Over"
+        }
+
+        window.display();
+
         int time = clock.getElapsedTime().asSeconds();
-        if(time != prev)
+        if (time != prev)
         {
             ssFPS.str("");
-            ssFPS << "FPS:"<< c;
+            ssFPS << "FPS:" << c;
             textFPS.setString(ssFPS.str());
             c = 0;
             prev = time;
         }
 
         c++;
-//#####################################################
     }
 
     return 0;
