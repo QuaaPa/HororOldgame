@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -6,7 +7,8 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(900, 600), "SFML works!", sf::Style::None);
+    sf::RenderWindow window(sf::VideoMode(900, 600), "SFML works!");
+
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(false);
 
@@ -19,11 +21,35 @@ int main()
 
     sf::Vector2i mousePosition; // Позиция мыши
 
+    //######### LOAD FONT #######################
     sf::Font arial_font;
-    if (!arial_font.loadFromFile("resources/BlackArial.ttf"))
+    if (!arial_font.loadFromFile("resources/font/BlackArial.ttf"))
     {
         std::cout << "ERROR LOAD FONT" << std::endl;
     }
+
+//######################################################################
+sf::Texture texture1, texture2, texture3, texture4;
+texture1.loadFromFile("resources/image/SC1.png");
+texture2.loadFromFile("resources/image/SC2.png");
+texture3.loadFromFile("resources/image/SC3.png");
+texture4.loadFromFile("resources/image/SC4.png");
+
+sf::Sprite sprite1, sprite2, sprite3, sprite4;
+sprite1.setTexture(texture1);
+sprite2.setTexture(texture2);
+sprite3.setTexture(texture3);
+sprite4.setTexture(texture4);
+
+//####
+sf::Sprite animationSC;
+animationSC.setTexture(texture1);
+//####
+sf::Clock animationClock;
+float frameDuration = 0.3f; // Продолжительность каждого кадра в секундах
+int currentFrame = 0;
+//######################################################################
+
 
     sf::Text textPos;
     textPos.setFont(arial_font);
@@ -48,7 +74,7 @@ int main()
     textFPS.setString("FPS: 0");
 
     sf::Image map_image;
-    map_image.loadFromFile("resources/MapIm.png");
+    map_image.loadFromFile("resources/image/MapIm.png");
 
     sf::Texture map;
     map.loadFromImage(map_image);
@@ -67,12 +93,19 @@ int main()
     std::ostringstream ssFPS;
 
     //##### SET DEFAULT OPTION #################
-    sf::Mouse::setPosition(sf::Vector2i(830, 540), window);
-    textPos.setString("x = [450] y = [300]");
+    sf::Mouse::setPosition(sf::Vector2i(800, 520), window);
+    shape.setPosition(sf::Vector2f(800, 520));
+    textPos.setString("x = [800] y = [5200]");
     //########################################
 
-    sf::Clock gameOverClock; // Таймер для отображения "Game Over"
+    sf::Clock ClockEventGameOver; // Таймер для отображения "Game Over"
+    sf::Clock ClockEventVin;
     bool showGameOver = false;
+
+    bool Colision = true;
+    textCol.setString("Collision / ON");
+
+    bool ShowSC = false;
 
     while (window.isOpen())
     {
@@ -92,9 +125,14 @@ int main()
                 ssPos << "x = [" << mousePosition.x << "] y = [" << mousePosition.y << "]";
                 textPos.setString(ssPos.str());
             }
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Tab))
+            {
+                Colision = false;
+                textCol.setString("Collision / OFF");
+            }
         }
 
-        if (gameOverClock.getElapsedTime().asSeconds() >= 2.0f)
+        if (ClockEventGameOver.getElapsedTime().asSeconds() >= 2.0f)
         {
             showGameOver = false;
         }
@@ -132,18 +170,56 @@ int main()
                 tileBounds = s_map.getGlobalBounds();
                 playerBounds = shape.getGlobalBounds();
 
-                if (LevelMap[i][j] == '0' && playerBounds.intersects(tileBounds))
+                if (LevelMap[i][j] == '0' && playerBounds.intersects(tileBounds) && Colision)
                 {
                     // Если есть коллизия с черным квадратом, перемещаемся на начальную позицию
                     shape.setPosition(sf::Vector2f(800, 520)); // Установите начальную позицию здесь
                     sf::Mouse::setPosition(sf::Vector2i(800, 520), window);
-                    textCol.setString("Collision!!");
 
                     showGameOver = true;
-                    gameOverClock.restart();
+                    ClockEventGameOver.restart();
+
+                }
+                if (LevelMap[i][j] == 's' && playerBounds.intersects(tileBounds) && Colision)
+                {
+                    ShowSC = true;
                 }
             }
         }
+
+        if(ShowSC)
+        {
+            // Обновление анимации
+            if (animationClock.getElapsedTime().asSeconds() >= frameDuration) {
+                animationClock.restart();
+
+                currentFrame++;
+                if (currentFrame > 3) {
+                    currentFrame = 0;
+                }
+
+                // В зависимости от текущего кадра устанавливаем соответствующую текстуру
+                switch (currentFrame)
+                {
+                    case 0:
+                        animationSC.setTexture(texture1);
+                        break;
+                    case 1:
+                        animationSC.setTexture(texture2);
+                        break;
+                    case 2:
+                        animationSC.setTexture(texture3);
+                        break;
+                    case 3:
+                        animationSC.setTexture(texture4);
+                        break;
+                }
+                animationSC.setPosition(1,1);
+                animationSC.setScale(1.3,1.3);
+                window.draw(animationSC);
+            }
+        }
+
         window.draw(shape);
         window.draw(textPos);
         window.draw(textFPS);
